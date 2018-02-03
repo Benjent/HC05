@@ -1,16 +1,21 @@
 package fr.enssat.morvan.hc_05;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +23,7 @@ import android.widget.LinearLayout;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by benjent on 03/02/18.
@@ -26,6 +32,8 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
 
     private final static int REQUEST_ENABLE_BT = 1;
+    private static String MY_UUID;
+    BluetoothAdapter mBluetoothAdapter;
 
     LinearLayout buttonView;
 
@@ -37,11 +45,20 @@ public class MainActivity extends AppCompatActivity {
         // Views
         buttonView = findViewById(R.id.ButtonView);
 
-        // Bluetooth
-        BluetoothHeadset mBluetoothHeadset;
+        // UUID
+        TelephonyManager tManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
 
+            ActivityCompat.requestPermissions(
+                    this, new String[] {android.Manifest.permission.READ_PHONE_STATE},
+                    BluetoothService.MY_PERMISSION_ACCESS_BLUETOOTH_SERVICE
+            );
+        }
+        MY_UUID = tManager.getDeviceId();
+
+        // Bluetooth
         // Get the default adapter
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             // Device doesn't support Bluetooth
         }
@@ -88,27 +105,6 @@ public class MainActivity extends AppCompatActivity {
         buttonView.addView(button);
     }
 
-    private BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
-        public void onServiceConnected(int profile, BluetoothProfile proxy) {
-            if (profile == BluetoothProfile.HEADSET) {
-                mBluetoothHeadset = (BluetoothHeadset) proxy;
-            }
-        }
-        public void onServiceDisconnected(int profile) {
-            if (profile == BluetoothProfile.HEADSET) {
-                mBluetoothHeadset = null;
-            }
-        }
-    };
-
-    // Establish connection to the proxy.
-    mBluetoothAdapter.getProfileProxy(context, mProfileListener, BluetoothProfile.HEADSET);
-
-    // ... call functions on mBluetoothHeadset
-
-    // Close proxy connection after use.
-    mBluetoothAdapter.closeProfileProxy(mBluetoothHeadset);
-
     // Create a BroadcastReceiver for ACTION_FOUND.
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -140,9 +136,9 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
                 // MY_UUID is the app's UUID string, also used in the server code.
-                tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+                tmp = device.createRfcommSocketToServiceRecord(UUID.fromString(MY_UUID));
             } catch (IOException e) {
-                Log.e(TAG, "Socket's create() method failed", e);
+                Log.e("Socket", "Socket's create() method failed", e);
             }
             mmSocket = tmp;
         }
@@ -160,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     mmSocket.close();
                 } catch (IOException closeException) {
-                    Log.e(TAG, "Could not close the client socket", closeException);
+                    Log.e("Socket", "Could not close the client socket", closeException);
                 }
                 return;
             }
@@ -170,12 +166,16 @@ public class MainActivity extends AppCompatActivity {
             manageMyConnectedSocket(mmSocket);
         }
 
+        private void manageMyConnectedSocket(BluetoothSocket mmSocket) {
+            // TODO
+        }
+
         // Closes the client socket and causes the thread to finish.
         public void cancel() {
             try {
                 mmSocket.close();
             } catch (IOException e) {
-                Log.e(TAG, "Could not close the client socket", e);
+                Log.e("Socket", "Could not close the client socket", e);
             }
         }
     }
@@ -187,3 +187,4 @@ public class MainActivity extends AppCompatActivity {
         // Don't forget to unregister the ACTION_FOUND receiver.
         unregisterReceiver(mReceiver);
     }
+}

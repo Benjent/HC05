@@ -22,6 +22,7 @@ public class BluetoothService {
     // ********************************************************* //
 
     private static final String TAG = "MY_APP_DEBUG_TAG";
+    public static final int MY_PERMISSION_ACCESS_BLUETOOTH_SERVICE = 2;
     private Handler mHandler; // handler that gets info from Bluetooth service
 
     // Defines several constants used when transmitting messages between the
