@@ -7,6 +7,14 @@
     tools:context="fr.enssat.morvan.hc_05.MainActivity">
 
     <LinearLayout
+        android:id="@+id/BluetoothView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/ButtonView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
