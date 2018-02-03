@@ -25,6 +25,8 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static int REQUEST_ENABLE_BT = 1;
+
     LinearLayout buttonView;
 
     @Override
